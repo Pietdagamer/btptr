@@ -1,21 +1,21 @@
 """
 List of commands:
 
-!tell [Sends a message to a user when they return]
-!afk [Marks a user Away From Keyboard]
-!back [Marks a user back]
-!where [Checks where a user is (AFK or Back)]
-!choose [Chooses one of the given options]
-!answer (kindof)
-!remind [Reminds a user of something after a given amount of time]
-!waitforit [stupid reference joke command]
-!whatsnew [New functions in the bot]
-!say [Make the bot send a message]
-!rejoin [Rejoins the channel]
-!ascii [Turns a string into ASCII-art]
-!ok [Prints "OK" in ASCII-art]
-!pls [Prints "PLS" in ASCII-art]
-n1 [Prints "N1" in ASCII-art]
+     !tell [Sends a message to a user when they return]
+     !afk [Marks a user Away From Keyboard]
+     !back [Marks a user back]
+     !where [Checks where a user is (AFK or Back)]
+DONE !choose [Chooses one of the given options]
+     !answer (kindof)
+     !remind [Reminds a user of something after a given amount of time]
+     !waitforit [stupid reference joke command]
+     !whatsnew [New functions in the bot
+DONE !say [Make the bot send a message]
+     !rejoin [Rejoins the channel]
+     !ascii [Turns a string into ASCII-art]
+     !ok [Prints "OK" in ASCII-art]
+     !pls [Prints "PLS" in ASCII-art]
+     n1 [Prints "N1" in ASCII-art]
 """
 
 import socket
@@ -44,10 +44,8 @@ def getsender(data):
     print "Sender: " + sender
     return sender
 
-def say(args):
-    message = ""
-    for i in range(0, len(args)):
-        message += args[i] + " "
+def say(data):
+    message = data.split(":")[2]
     msg(message)
 
 def choose(args):
@@ -82,7 +80,7 @@ def parseArgs(data):
         if args[i] != '':
             cleanArgs.append(args[i])
         #elif args[i].endswith("\r\n"): #Might not work on linux!!
-        #    args[i][(len(args[i]) - 5), (len(args[i]) - 1)] = ""
+        #    print args[i]
 
         i -= 1
             
@@ -100,14 +98,13 @@ while 1:
         sock.send("JOIN " + chan + "\r\n")
     elif data.split(" ")[1] == "PRIVMSG":
         command = data.split(" ")[3]
-        args = parseArgs(data)
-
-        print args
-            
-        if command == ":!say":
-            say(args)
-        elif command == ":!choose":
-            choose(args)
+        if command.startswith(":!"):
+            args = parseArgs(data)
+                
+            if command == ":!say":
+                say(data)
+            elif command == ":!choose":
+                choose(args)
             
 
         
