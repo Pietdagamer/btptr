@@ -25,7 +25,7 @@ import time
 import random
 import re
 
-class ircbot:
+class IRCBot:
     nickname = None
     channel = None
     owner = None
