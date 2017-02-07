@@ -6,7 +6,7 @@
 
     Copyright (c) 2017 MrTijn
 
-    Foobar is free software: you can redistribute it and/or modify
+    btptr is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
@@ -48,6 +48,10 @@ class ircbot:
         sock.send("USER " + self.nickname + " 0 * :" + self.owner + "\r\n")
         sock.send("NICK " + self.nickname + "\r\n")
 
+    def join_channel(self, sock):
+        sock.send("MODE " + self.nickname + " +B\r\n")
+        sock.send("JOIN " + self.channel + "\r\n")
+
     def send_msg(self, msg, sock):
         """Send a string to the configured channel"""
         return sock.send("PRIVMSG " + self.channel + " :" + msg + "\r\n")
@@ -71,15 +75,17 @@ class ircbot:
         # :MrTijn!~MrTijn@unaffiliated/tijndagamer PRIVMSG #btjchmpy :!say this is a command
 
         # Retrieve the command and its arguments from the data
-        command_and_args = command_regex.findall(data)[0].lstrip("PRIVMSG " + self.channel + ":!")
+        data = data.rstrip("\r\n")
+        command_and_args = self.command_regex.findall(data)[0].lstrip("PRIVMSG " + self.channel + ":")
         command = command_and_args.split(' ')[0]
 
         # Second lstrip is to remove trailing whitespace
         arguments = command_and_args.lstrip(command).lstrip()
-        if quote_regex.match(arguments) == None:
+        if self.quote_regex.match(arguments) == None:
             # No arguments with quotes given, so this is easy
             arguments = arguments.split(' ')
         else:
+            pass
             # todo
         return [command, arguments]
 
@@ -87,19 +93,26 @@ class ircbot:
         if data[0:4] == "PING":
             sock.send(data.replace("PING", "PONG"))
         if data[0] != ':':
-            continue
-        if data.split(' ')[1] == "PRIVMSG":
+            pass
+        if (self.nickname + " :End of /MOTD comm") in data:
+            self.join_channel(sock)
+        elif data.split(' ')[1] == "PRIVMSG":
             msg = data.split(' ')[3]
             if msg.startswith(":!"):
-                arguments = self.parse_arguments(data)
+                command_and_args = self.parse_arguments(data)
+                command = command_and_args[0]
+                args = command_and_args[1]
+                print(command_and_args)
 
-                if command == ":!say":
-                    self.command_say(arguments, sock)
+                if command == "!say":
+                    self.command_say(args, sock)
+                elif command == "!choose":
+                    pass
 
     # Methods for user-commands
 
     def command_say(self, msg, sock):
         """Say what the user told us to say"""
-        return self.send_msg(msg.split(':')[2], sock)
+        return self.send_msg(''.join(msg), sock)
 
 #    def command_choose(self, msg, sock):
