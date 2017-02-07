@@ -34,7 +34,9 @@ class IRCBot:
 
     # compiled regexes for optimisation
     command_regex = re.compile('PRIVMSG \#\S+ \:\!.*')
-    quote_regex = re.compile('"')
+    
+    # Magical regex sponsored by Fredrik
+    quoted_arguments_regex = re.compile(r'((?:")[^"]+(?:")|\b[^\s]+\b)')
 
     def __init__(self, nickname, channel, owner, irc_server_address, irc_server_port):
         self.nickname = nickname
@@ -81,12 +83,8 @@ class IRCBot:
 
         # Second lstrip is to remove trailing whitespace
         arguments = command_and_args.lstrip(command).lstrip()
-        if self.quote_regex.match(arguments) == None:
-            # No arguments with quotes given, so this is easy
-            arguments = arguments.split(' ')
-        else:
-            pass
-            # todo
+        arguments = self.quoted_arguments_regex.findall(arguments) 
+
         return [command, arguments]
 
     def parse_recv_data(self, data, sock):
@@ -107,12 +105,14 @@ class IRCBot:
                 if command == "!say":
                     self.command_say(args, sock)
                 elif command == "!choose":
-                    pass
+                    self.command_choose(args, sock)
 
     # Methods for user-commands
 
     def command_say(self, msg, sock):
         """Say what the user told us to say"""
-        return self.send_msg(''.join(msg), sock)
+        return self.send_msg(' '.join(msg), sock)
 
-#    def command_choose(self, msg, sock):
+    def command_choose(self, args, sock):
+        """Choose one of the arguments randomly"""
+        self.send_msg(random.choose(args), sock)
