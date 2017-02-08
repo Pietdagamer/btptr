@@ -3,15 +3,11 @@
 
 import socket
 import time
-import random
 import ircbot
 
 DEBUG = True
 
-nicknumb = random.randint(0,999)
-
 bot_owner = "Meandonlymeandnooneelse"
-#nick = "btptr" + str(nicknumb)
 nick = "btjchmpy"
 
 if DEBUG:
@@ -23,7 +19,6 @@ server = "irc.freenode.net"
 port = 6667
 
 btptr = ircbot.IRCBot(nick, channel, bot_owner, server, port)
-
 sock = socket.socket()
 btptr.connect(sock)
 
