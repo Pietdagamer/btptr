@@ -37,7 +37,7 @@ class IRCBot:
     command_regex = re.compile('PRIVMSG \#\S+ \:\!.*')
     
     # Magical regex sponsored by Fredrik
-    quoted_arguments_regex = re.compile(r'((?:")[^"]+(?:")|\b[\S]+\b)')
+    quoted_arguments_regex = re.compile(r'((?:")[^"]+(?:")|[\S]+)')
 
     def __init__(self, nickname, channel, owner, irc_server_address, irc_server_port):
         self.nickname = nickname
