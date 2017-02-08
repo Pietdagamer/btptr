@@ -115,4 +115,4 @@ class IRCBot:
 
     def command_choose(self, args, sock):
         """Choose one of the arguments randomly"""
-        self.send_msg(random.choose(args), sock)
+        self.send_msg(random.choice(args), sock)

@@ -10,12 +10,12 @@ An IRC bot written in python
 | !afk       | Marks a user Away From Keyboard                           |N			   |
 | !back      | Marks a user back                                         |N		       |
 | !where     | Checks where a user is (AFK or Back)                      |N			   |
-| !choose    | Chooses one of the given options                          |N			   |
+| !choose    | Chooses one of the given options                          |Y			   |
 | !answer    | (kindof)                                                  |N			   |
 | !remind    | Reminds a user of something after a given amount of time  |N			   |
 | !waitforit | stupid reference joke command                             |N			   |
 | !whatsnew  | New functions in the bot                                  |N			   |
-| !say       | Make the bot send a message                               |N			   |
+| !say       | Make the bot send a message                               |Y			   |
 | !rejoin    | Rejoins the channel                                       |N			   |
 | !ascii     | Turns a string into ASCII-art                             |N			   |
 | !ok        | Prints "OK" in ASCII-art                                  |N			   |
