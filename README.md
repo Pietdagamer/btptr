@@ -17,9 +17,14 @@ An IRC bot written in python
 | !whatsnew  | New functions in the bot                                  |N			   |
 | !say       | Make the bot send a message                               |Y			   |
 | !rejoin    | Rejoins the channel                                       |N			   |
-| !ascii     | Turns a string into ASCII-art                             |N			   |
+| !ascii     | Turns a string into ASCII-art                             |Y*		   |
 | !ok        | Prints "OK" in ASCII-art                                  |N			   |
 | !pls       | Prints "PLS" in ASCII-art                                 |N			   |
 | n1         | Prints "N1" in ASCII-art                                  |N			   |
 | !lenny     | Prints a lenny face:  ( ͡° ͜ʖ ͡°)                            |N			   |
 | !tableflip | Prints a table flip: (╯°□°）╯︵ ┻━┻                       |N			   |
+
+Notes:
+    !ascii:
+        Due to a problem with the parser, special characters after or at the beginning
+        of a word will fail to be parsed.

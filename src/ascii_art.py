@@ -188,6 +188,8 @@ class AsciiArt:
         , " . "
         , " , "]
 
+    not_implemented =["", "", ""]
+
     characters = {'a' : a, 'b' : b, 'c' : c, 'd' : d, 'e' : e, 'f' : f, 'g' : g,
         'h' : h, 'i' : i, 'j' : j, 'k' : k, 'l' : l, 'm' : m, 'n' : n, 'o' : o,
         'p' : p, 'q' : q, 'r' : r, 's' : s, 't' : t, 'u' : u, 'v' : v, 'w' : w,
@@ -196,4 +198,9 @@ class AsciiArt:
         '6' : n6, '7' : n7, '8' : n8, '9' : n9, '0' : n0, '+' : plus, '-' : dash,
         '_' : underscore, '=' : equals, '(' : parenthesis_open, ')' : parenthesis_close,
         '%' : percentage, '"' : double_quote, '\'' : quote, '>' : larger_than,
-        '<' : smaller_than, '/' : forward_slash, '|' : bar, ':' : colon, ';' : semicolon }
+        '<' : smaller_than, '/' : forward_slash, '|' : bar, ':' : colon, ';' : semicolon,
+        '@' : not_implemented, '#' : not_implemented, '$' : not_implemented,
+        '^' : not_implemented, '&' : not_implemented, '*' : not_implemented,
+        '~' : not_implemented, '`' : not_implemented, '{' : not_implemented,
+        '}' : not_implemented, '[' : not_implemented, ']' : not_implemented,
+        '\\' : not_implemented}

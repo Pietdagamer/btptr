@@ -24,6 +24,7 @@ import socket
 import time
 import random
 import re
+from ascii_art import AsciiArt
 
 class IRCBot:
     nickname = None
@@ -36,7 +37,7 @@ class IRCBot:
     command_regex = re.compile('PRIVMSG \#\S+ \:\!.*')
     
     # Magical regex sponsored by Fredrik
-    quoted_arguments_regex = re.compile(r'((?:")[^"]+(?:")|\b[^\s]+\b)')
+    quoted_arguments_regex = re.compile(r'((?:")[^"]+(?:")|\b[\S]+\b)')
 
     def __init__(self, nickname, channel, owner, irc_server_address, irc_server_port):
         self.nickname = nickname
@@ -106,6 +107,8 @@ class IRCBot:
                     self.command_say(args, sock)
                 elif command == "!choose":
                     self.command_choose(args, sock)
+                elif command == "!ascii":
+                    self.command_ascii(args, sock)
 
     # Methods for user-commands
 
@@ -116,3 +119,22 @@ class IRCBot:
     def command_choose(self, args, sock):
         """Choose one of the arguments randomly"""
         self.send_msg(random.choice(args), sock)
+
+    def command_ascii(self, msg, sock):
+        """Print msg in big ascii art letters"""
+        # Convert msg to string
+        msg = ' '.join(msg)
+
+        line1 = ""
+        line2 = ""
+        line3 = ""
+
+        for char in msg:
+            char = char.lower()
+            line1 += AsciiArt.characters[char][0]
+            line2 += AsciiArt.characters[char][1]
+            line3 += AsciiArt.characters[char][2]
+
+        self.send_msg(line1, sock)
+        self.send_msg(line2, sock)
+        self.send_msg(line3, sock)
