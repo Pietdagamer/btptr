@@ -11,7 +11,7 @@
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
 
-    Foobar is distributed in the hope that it will be useful,
+    btptr is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -46,12 +46,23 @@ class IRCBot:
         self.irc_server_address = irc_server_address
         self.irc_server_port = irc_server_port
 
+    def version(self):
+        """Returns current version"""
+        return "btptr v0.1"
+
+    def license(self):
+        """Returns license information"""
+        with open("license_information.txt") as f:
+            return f.read()
+
     def connect(self, sock):
+        """Connects to IRC server and sets nickname"""
         sock.connect((self.irc_server_address, self.irc_server_port))
         sock.send("USER " + self.nickname + " 0 * :" + self.owner + "\r\n")
         sock.send("NICK " + self.nickname + "\r\n")
 
     def join_channel(self, sock):
+        """Join configured channel"""
         sock.send("MODE " + self.nickname + " +B\r\n")
         sock.send("JOIN " + self.channel + "\r\n")
 
