@@ -24,6 +24,7 @@ import socket
 import time
 import random
 import re
+import csv
 from ascii_art import AsciiArt
 
 class IRCBot:
@@ -37,7 +38,7 @@ class IRCBot:
     command_regex = re.compile('PRIVMSG \#\S+ \:\!.*')
     
     # Magical regex sponsored by Fredrik
-    quoted_arguments_regex = re.compile(r'((?:")[^"]+(?:")|\b[\S]+\b)')
+    quoted_arguments_regex = re.compile(r'((?:")[^"]+(?:")|[\S]+)')
 
     def __init__(self, nickname, channel, owner, irc_server_address, irc_server_port):
         self.nickname = nickname
@@ -115,23 +116,25 @@ class IRCBot:
                 print(command_and_args)
 
                 if command == "!say":
-                    self.command_say(args, sock)
+                    self.cmd_say(args, sock)
                 elif command == "!choose":
-                    self.command_choose(args, sock)
+                    self.cmd_choose(args, sock)
                 elif command == "!ascii":
-                    self.command_ascii(args, sock)
+                    self.cmd_ascii(args, sock)
+                elif command == "!afk":
+                    self.cmd_afk(self.get_sender(data), args, sock)
 
     # Methods for user-commands
 
-    def command_say(self, msg, sock):
+    def cmd_say(self, msg, sock):
         """Say what the user told us to say"""
         return self.send_msg(' '.join(msg), sock)
 
-    def command_choose(self, args, sock):
+    def cmd_choose(self, args, sock):
         """Choose one of the arguments randomly"""
         self.send_msg(random.choice(args), sock)
 
-    def command_ascii(self, msg, sock):
+    def cmd_ascii(self, msg, sock):
         """Print msg in big ascii art letters"""
         # Convert msg to string
         msg = ' '.join(msg)
@@ -149,3 +152,10 @@ class IRCBot:
         self.send_msg(line1, sock)
         self.send_msg(line2, sock)
         self.send_msg(line3, sock)
+
+    def cmd_afk(self, user, args, sock):
+        """Marks a user afk"""
+        with open("users_afk.csv", 'w', newline='') as csvfile:
+            csvwriter = csv.writer(csvfile, delimiter=',', quotechar='|',
+                                    quoting=csv.QUOTE_MINIMAL)
+            csvwriter.writerow([user, args])
