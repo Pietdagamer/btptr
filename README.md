@@ -9,7 +9,7 @@ An IRC bot written in python
 | !tell      | Sends a message to a user when they return                |N			   |
 | !afk       | Marks a user Away From Keyboard                           |Y			   |
 | !back      | Marks a user back                                         |Y		       |
-| !where     | Checks where a user is (AFK or Back)                      |WIP		   |
+| !where     | Checks where a user is (AFK or Back)                      |Y     	   |
 | !choose    | Chooses one of the given options                          |Y			   |
 | !answer    | (kindof)                                                  |N			   |
 | !remind    | Reminds a user of something after a given amount of time  |N			   |
@@ -28,4 +28,5 @@ An IRC bot written in python
 # Todo
 
 - Add IRC text color class/utils
+- Maintain AFK user list in memory, next to csv file?
 ~- Check if making the socket a class variable doesn't break things~

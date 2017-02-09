@@ -96,6 +96,15 @@ class IRCBot:
     def get_online_users(self):
         """Request userlist from server"""
         self.sock.send("NAMES " + self.channel + "\r\n")
+        # So this is kinda risky, because we could miss a user message if this
+        # isn't the server response of our NAMES command. But let's just hope
+        # that'll never happen.
+        answer = self.sock.recv(512)
+        if answer.split(' ')[1] == "353":
+            self.parse_userlist(answer)
+            return True
+        else:
+            return False
 
     """
     Parsers
@@ -290,11 +299,10 @@ class IRCBot:
                     self.send_msg(user + ": " + user + " is afk: " + row[1])
                     return
 
-        # So this is kinda annoying, we can't update the internal userlist inside
-        # the method, because the socket is external
-        self.get_online_users()
+        result = self.get_online_users()
 
         if self.DEBUG:
+            print(result)
             print(self.online_users)
 
         if user in self.online_users:
