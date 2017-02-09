@@ -25,9 +25,12 @@ import time
 import random
 import re
 import csv
+import sys
 from ascii_art import AsciiArt
+import utils
 
 class IRCBot:
+    DEBUG = True
     nickname = None
     channel = None
     owner = None
@@ -105,7 +108,7 @@ class IRCBot:
             sock.send(data.replace("PING", "PONG"))
         if data[0] != ':':
             pass
-        if (self.nickname + " :End of /MOTD comm") in data:
+        if (self.nickname + " :End of /MOTD") in data:
             self.join_channel(sock)
         elif data.split(' ')[1] == "PRIVMSG":
             msg = data.split(' ')[3]
@@ -113,7 +116,8 @@ class IRCBot:
                 command_and_args = self.parse_arguments(data)
                 command = command_and_args[0]
                 args = command_and_args[1]
-                print(command_and_args)
+                if self.DEBUG:
+                    print(command_and_args)
 
                 if command == "!say":
                     self.cmd_say(args, sock)
@@ -123,12 +127,17 @@ class IRCBot:
                     self.cmd_ascii(args, sock)
                 elif command == "!afk":
                     self.cmd_afk(self.get_sender(data), args, sock)
+                elif command == "!stop":
+                    if self.DEBUG:
+                        if self.get_sender(data) == "MrTijn":
+                            print("Stopping...")
+                            sys.exit(0)
 
     # Methods for user-commands
 
     def cmd_say(self, msg, sock):
         """Say what the user told us to say"""
-        return self.send_msg(' '.join(msg), sock)
+        return self.send_msg(utils.list_to_str(msg), sock)
 
     def cmd_choose(self, args, sock):
         """Choose one of the arguments randomly"""
@@ -137,7 +146,7 @@ class IRCBot:
     def cmd_ascii(self, msg, sock):
         """Print msg in big ascii art letters"""
         # Convert msg to string
-        msg = ' '.join(msg)
+        msg = utils.list_to_str(msg)
 
         line1 = ""
         line2 = ""
@@ -153,9 +162,39 @@ class IRCBot:
         self.send_msg(line2, sock)
         self.send_msg(line3, sock)
 
-    def cmd_afk(self, user, args, sock):
-        """Marks a user afk"""
-        with open("users_afk.csv", 'w', newline='') as csvfile:
-            csvwriter = csv.writer(csvfile, delimiter=',', quotechar='|',
-                                    quoting=csv.QUOTE_MINIMAL)
-            csvwriter.writerow([user, args])
+    def cmd_afk(self, user, away_msg, sock):
+        """Marks a user afk
+ 
+        user: username of the user who issued the command, string
+        away_msg: away msg to be set, list of strings
+        """
+        away_msg = utils.list_to_str(away_msg)
+
+        users_afk = []
+        with open("users_afk.csv", 'r') as f:
+            users_afk.extend(csv.reader(f))
+
+        if self.DEBUG:
+            print(users_afk)
+
+        # Hacky fix for bug when no one is afk
+        if users_afk == []:
+            users_afk.append(['',''])
+            if self.DEBUG:
+                print("Added empty row for users_afk")
+
+        set_afk = False
+        for row in users_afk:
+            if user == row[0]:
+                row[1] = away_msg
+                self.send_msg("You were already away, Your new afk message is: " + away_msg, sock)
+                set_afk = True
+        if set_afk == False:
+            users_afk.append([user, away_msg])
+            self.send_msg("You are now afk.", sock)
+
+        if self.DEBUG:
+            print(users_afk)
+
+        with open("users_afk.csv", 'w') as f:
+            csv.writer(f).writerows(users_afk)
