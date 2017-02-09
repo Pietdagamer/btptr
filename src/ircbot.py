@@ -127,6 +127,8 @@ class IRCBot:
                     self.cmd_ascii(args, sock)
                 elif command == "!afk":
                     self.cmd_afk(self.get_sender(data), args, sock)
+                elif command == "!back" or command == "!rug" or command == "!brak":
+                    self.cmd_back(self.get_sender(data), sock)
                 elif command == "!stop":
                     if self.DEBUG:
                         if self.get_sender(data) == "MrTijn":
@@ -196,5 +198,28 @@ class IRCBot:
         if self.DEBUG:
             print(users_afk)
 
+        with open("users_afk.csv", 'w') as f:
+            csv.writer(f).writerows(users_afk)
+
+    def cmd_back(self, user, sock):
+        """Removes afk marking for a given user"""
+        users_afk = []
+        with open("users_afk.csv", 'r') as f:
+            users_afk.extend(csv.reader(f))
+
+        if self.DEBUG:
+            print(users_afk)
+
+        state_changed = False
+        if users_afk != []:
+            for row in users_afk:
+                if user == row[0]:
+                    users_afk.remove(row)
+                    self.send_msg("Welcome back!", sock)
+                    state_changed = True
+        if state_changed == False:
+            self.send_msg("You weren't afk, but welcome back!", sock)
+
+        # Write changes to database
         with open("users_afk.csv", 'w') as f:
             csv.writer(f).writerows(users_afk)

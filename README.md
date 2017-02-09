@@ -8,7 +8,7 @@ An IRC bot written in python
 |------------|-----------------------------------------------------------|-------------|
 | !tell      | Sends a message to a user when they return                |N			   |
 | !afk       | Marks a user Away From Keyboard                           |Y			   |
-| !back      | Marks a user back                                         |N		       |
+| !back      | Marks a user back                                         |Y		       |
 | !where     | Checks where a user is (AFK or Back)                      |N			   |
 | !choose    | Chooses one of the given options                          |Y			   |
 | !answer    | (kindof)                                                  |N			   |
