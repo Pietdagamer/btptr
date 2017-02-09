@@ -9,7 +9,7 @@ An IRC bot written in python
 | !tell      | Sends a message to a user when they return                |N			   |
 | !afk       | Marks a user Away From Keyboard                           |Y			   |
 | !back      | Marks a user back                                         |Y		       |
-| !where     | Checks where a user is (AFK or Back)                      |N			   |
+| !where     | Checks where a user is (AFK or Back)                      |WIP		   |
 | !choose    | Chooses one of the given options                          |Y			   |
 | !answer    | (kindof)                                                  |N			   |
 | !remind    | Reminds a user of something after a given amount of time  |N			   |
@@ -25,3 +25,7 @@ An IRC bot written in python
 | !tableflip | Prints a table flip: (╯°□°）╯︵ ┻━┻                       |N			   |
 | !quote     | Quote system                                              |N            |
 
+# Todo
+
+- Add IRC text color class/utils
+- Check if making the socket a class variable doesn't break things

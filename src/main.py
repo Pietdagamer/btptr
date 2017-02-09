@@ -39,10 +39,12 @@ server = "irc.freenode.net"
 port = 6667
 
 btptr = ircbot.IRCBot(nick, channel, bot_owner, server, port)
-sock = socket.socket()
-btptr.connect(sock)
+#sock = socket.socket()
+#btptr.connect(sock)
+
+time.sleep(5)
 
 while 1:
-    data = sock.recv(512)
+    data = btptr.sock.recv(512)
     print(data)
-    btptr.parse_recv_data(data, sock)
+    btptr.parse_recv_data(data, btptr.sock)
