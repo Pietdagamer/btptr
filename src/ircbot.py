@@ -72,30 +72,30 @@ class IRCBot:
         self.sock.send("USER " + self.nickname + " 0 * :" + self.owner + "\r\n")
         self.sock.send("NICK " + self.nickname + "\r\n")
 
-    def join_channel(self, sock):
+    def join_channel(self):
         """Join configured channel"""
         self.sock.send("MODE " + self.nickname + " +B\r\n")
         self.sock.send("JOIN " + self.channel + "\r\n")
 
-    def send_msg(self, msg, sock):
+    def send_msg(self, msg):
         """Send a string to the configured channel"""
-        return sock.send("PRIVMSG " + self.channel + " :" + msg + "\r\n")
+        return self.sock.send("PRIVMSG " + self.channel + " :" + msg + "\r\n")
 
-    def send_raw(self, data, sock):
+    def send_raw(self, data):
         """Send raw data to irc server"""
-        return sock.send(data + "\r\n")
+        return self.sock.send(data + "\r\n")
 
-    def notice(self, msg, nick, sock):
-        return sock.send("NOTICE " + nick + " :" + msg + "\r\n")
+    def notice(self, msg, nick):
+        return self.sock.send("NOTICE " + nick + " :" + msg + "\r\n")
 
     def get_sender(self, msg):
         """Parse sender from given message"""
         # Maybe use a regex for this?
         return msg.split("!")[0].split(':')[1]
 
-    def get_online_users(self, sock):
+    def get_online_users(self):
         """Request userlist from server"""
-        sock.send("NAMES " + self.channel + "\r\n")
+        self.sock.send("NAMES " + self.channel + "\r\n")
 
     """
     Parsers
@@ -136,13 +136,13 @@ class IRCBot:
 
         return [command, arguments]
 
-    def parse_recv_data(self, data, sock):
+    def parse_recv_data(self, data):
         if data.startswith("PING"):
-            sock.send(data.replace("PING", "PONG"))
+            self.sock.send(data.replace("PING", "PONG"))
         if data[0] != ':':
             pass
         if (self.nickname + " :End of /MOTD") in data:
-            self.join_channel(sock)
+            self.join_channel()
         if data.split(' ')[1] == "353":
             if self.DEBUG:
                 print("Parsing userlist!")
@@ -157,17 +157,17 @@ class IRCBot:
                     print(command_and_args)
 
                 if command == "!say":
-                    self.cmd_say(args, sock)
+                    self.cmd_say(args)
                 elif command == "!choose":
-                    self.cmd_choose(args, sock)
+                    self.cmd_choose(args)
                 elif command == "!ascii":
-                    self.cmd_ascii(args, sock)
+                    self.cmd_ascii(args)
                 elif command == "!afk":
-                    self.cmd_afk(self.get_sender(data), args, sock)
+                    self.cmd_afk(self.get_sender(data), args)
                 elif command == "!back" or command == "!rug" or command == "!brak":
-                    self.cmd_back(self.get_sender(data), sock)
+                    self.cmd_back(self.get_sender(data))
                 elif command == "!where":
-                    self.cmd_where(args, sock)
+                    self.cmd_where(args)
 
                 # Debug-only commands
                 if self.DEBUG:
@@ -178,21 +178,21 @@ class IRCBot:
                             sys.exit(0)
                     elif command == "!send_raw":
                         print("!send_raw")
-                        print(self.send_raw(utils.list_to_str(args), sock))
+                        print(self.send_raw(utils.list_to_str(args)))
 
     """
     User command methods
     """
 
-    def cmd_say(self, msg, sock):
+    def cmd_say(self, msg):
         """Say what the user told us to say"""
-        return self.send_msg(utils.list_to_str(msg), sock)
+        return self.send_msg(utils.list_to_str(msg))
 
-    def cmd_choose(self, args, sock):
+    def cmd_choose(self, args):
         """Choose one of the arguments randomly"""
-        self.send_msg(random.choice(args), sock)
+        self.send_msg(random.choice(args))
 
-    def cmd_ascii(self, msg, sock):
+    def cmd_ascii(self, msg):
         """Print msg in big ascii art letters"""
         # Convert msg to string
         msg = utils.list_to_str(msg)
@@ -207,11 +207,11 @@ class IRCBot:
             line2 += AsciiArt.characters[char][1]
             line3 += AsciiArt.characters[char][2]
 
-        self.send_msg(line1, sock)
-        self.send_msg(line2, sock)
-        self.send_msg(line3, sock)
+        self.send_msg(line1)
+        self.send_msg(line2)
+        self.send_msg(line3)
 
-    def cmd_afk(self, user, away_msg, sock):
+    def cmd_afk(self, user, away_msg):
         """Marks a user afk
 
         user: username of the user who issued the command, string
@@ -236,11 +236,11 @@ class IRCBot:
         for row in users_afk:
             if user == row[0]:
                 row[1] = away_msg
-                self.send_msg("You were already away, Your new afk message is: " + away_msg, sock)
+                self.send_msg("You were already away, Your new afk message is: " + away_msg)
                 set_afk = True
         if set_afk == False:
             users_afk.append([user, away_msg])
-            self.send_msg("You are now afk.", sock)
+            self.send_msg("You are now afk.")
 
         if self.DEBUG:
             print(users_afk)
@@ -248,7 +248,7 @@ class IRCBot:
         with open("users_afk.csv", 'w') as f:
             csv.writer(f).writerows(users_afk)
 
-    def cmd_back(self, user, sock):
+    def cmd_back(self, user):
         """Removes afk marking for a given user"""
         users_afk = []
         with open("users_afk.csv", 'r') as f:
@@ -262,16 +262,16 @@ class IRCBot:
             for row in users_afk:
                 if user == row[0]:
                     users_afk.remove(row)
-                    self.send_msg("Welcome back!", sock)
+                    self.send_msg("Welcome back!")
                     state_changed = True
         if state_changed == False:
-            self.send_msg("You weren't afk, but welcome back!", sock)
+            self.send_msg("You weren't afk, but welcome back!")
 
         # Write changes to database
         with open("users_afk.csv", 'w') as f:
             csv.writer(f).writerows(users_afk)
 
-    def cmd_where(self, args, sock):
+    def cmd_where(self, args):
         """Sends given user state to channel
 
         The possible states are: online, offline and afk.
@@ -287,18 +287,18 @@ class IRCBot:
         if users_afk != []:
             for row in users_afk:
                 if user == row[0]:
-                    self.send_msg(user + ": " + user + " is afk: " + row[1], sock)
+                    self.send_msg(user + ": " + user + " is afk: " + row[1])
                     return
 
         # So this is kinda annoying, we can't update the internal userlist inside
         # the method, because the socket is external
-        self.get_online_users(sock)
+        self.get_online_users()
 
         if self.DEBUG:
             print(self.online_users)
 
         if user in self.online_users:
-            self.send_msg(user + ": " + user + " is online.", sock)
+            self.send_msg(user + ": " + user + " is online.")
             return
 
-        self.send_msg(user + ": " + user + " is offline.", sock)
+        self.send_msg(user + ": " + user + " is offline.")

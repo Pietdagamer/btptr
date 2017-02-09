@@ -47,4 +47,4 @@ time.sleep(5)
 while 1:
     data = btptr.sock.recv(512)
     print(data)
-    btptr.parse_recv_data(data, btptr.sock)
+    btptr.parse_recv_data(data)

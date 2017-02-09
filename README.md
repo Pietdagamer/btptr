@@ -28,4 +28,4 @@ An IRC bot written in python
 # Todo
 
 - Add IRC text color class/utils
-- Check if making the socket a class variable doesn't break things
+~- Check if making the socket a class variable doesn't break things~
