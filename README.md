@@ -23,6 +23,7 @@ An IRC bot written in python
 | n1         | Prints "N1" in ASCII-art                                  |N			   |
 | !lenny     | Prints a lenny face:  ( ͡° ͜ʖ ͡°)                            |N			   |
 | !tableflip | Prints a table flip: (╯°□°）╯︵ ┻━┻                       |N			   |
+| !quote     | Quote system                                              |N            |
 
 Notes:
     !ascii:
