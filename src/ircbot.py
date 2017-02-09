@@ -41,6 +41,8 @@ class IRCBot:
 
     online_users = []
 
+    preset_text_cmds = {}
+
     command_re = re.compile('PRIVMSG \#\S+ \:\!.*')
     status_chars_re = re.compile(r"@|\+")
 
@@ -54,8 +56,13 @@ class IRCBot:
         self.irc_server_address = irc_server_address
         self.irc_server_port = irc_server_port
 
+        # Connect to the IRC server
         self.sock = socket.socket()
         self.connect()
+
+        # Initialize print commands information
+        self.preset_text_cmds = { "!lenny" : "( ͡° ͜ʖ ͡°)", "!version" : self.version(), "!license" : self.license(),
+                "!help" : "TODO: Add help", "!tableflip" : "(╯°□°）╯︵ ┻━┻ " }
 
     def version(self):
         """Returns current version"""
@@ -64,7 +71,7 @@ class IRCBot:
     def license(self):
         """Returns license information"""
         with open("license_information.txt") as f:
-            return f.read()
+            return f.read().replace('\n','-')
 
     def connect(self):
         """Connects to IRC server and sets nickname"""
@@ -165,6 +172,9 @@ class IRCBot:
                 if self.DEBUG:
                     print(command_and_args)
 
+                if command in self.preset_text_cmds:
+                    self.send_msg(self.preset_text_cmds[command])
+
                 if command == "!say":
                     self.cmd_say(args)
                 elif command == "!choose":
@@ -190,19 +200,28 @@ class IRCBot:
                         print(self.send_raw(utils.list_to_str(args)))
 
     """
-    User command methods
+    Other user commands
     """
 
     def cmd_say(self, msg):
-        """Say what the user told us to say"""
+        """Say what the user told us to say
+
+        msg - list of strings
+        """
         return self.send_msg(utils.list_to_str(msg))
 
     def cmd_choose(self, args):
-        """Choose one of the arguments randomly"""
+        """Choose one of the arguments randomly
+
+        args - list of strings
+        """
         self.send_msg(random.choice(args))
 
     def cmd_ascii(self, msg):
-        """Print msg in big ascii art letters"""
+        """Print msg in big ascii art letters
+
+        msg - list of strings
+        """
         # Convert msg to string
         msg = utils.list_to_str(msg)
 
@@ -219,6 +238,11 @@ class IRCBot:
         self.send_msg(line1)
         self.send_msg(line2)
         self.send_msg(line3)
+
+
+    """
+    AFK / Back related commands
+    """
 
     def cmd_afk(self, user, away_msg):
         """Marks a user afk
