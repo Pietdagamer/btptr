@@ -41,6 +41,18 @@ class IRCBot:
 
     online_users = []
 
+    # Currently not used, will change into a timed sync to .csv for performance
+
+    # Format: [[str user, str afk_msg], ...]
+    afk_users = []
+
+    # Format: [[str t, str list args], ...]
+    # t format: "%Y-%m-%d %H:%M:%S"
+    # args format: [str action]
+    # args format for reminder: [str action, str user, str remind_msg]
+    # Actions: reminder, sync, ignore
+    timed_events = []
+
     preset_text_cmds = {}
 
     command_re = re.compile('PRIVMSG \#\S+ \:\!.*')
@@ -64,6 +76,9 @@ class IRCBot:
         self.preset_text_cmds = { "!lenny" : "( ͡° ͜ʖ ͡°)", "!version" : self.version(), "!license" : self.license(),
                 "!help" : "TODO: Add help", "!tableflip" : "(╯°□°）╯︵ ┻━┻ " }
 
+        # Make sure all .csv files exist
+        utils.touch_files()
+
     def version(self):
         """Returns current version"""
         return "btptr v0.1"
@@ -72,6 +87,14 @@ class IRCBot:
         """Returns license information"""
         with open("license_information.txt") as f:
             return f.read().replace('\n','-')
+
+    def debug_print(self, msg):
+        if self.DEBUG:
+            print(msg)
+
+    """
+    Basic connection methods
+    """
 
     def connect(self):
         """Connects to IRC server and sets nickname"""
@@ -95,6 +118,10 @@ class IRCBot:
     def notice(self, msg, nick):
         return self.sock.send("NOTICE " + nick + " :" + msg + "\r\n")
 
+    """
+    get_ methods
+    """
+
     def get_sender(self, msg):
         """Parse sender from given message"""
         # Maybe use a regex for this?
@@ -112,6 +139,61 @@ class IRCBot:
             return True
         else:
             return False
+
+    """
+    Timed events methods
+    """
+
+    def add_timed_event(self, action_time, args):
+        """Sets a timed event
+
+        time - struct_time
+        action - list of string
+        """
+
+        timed_events = []
+        with open("timed_events.csv", 'r') as f:
+            timed_events.extend(csv.reader(f))
+
+        if self.DEBUG:
+            print(timed_events)
+
+        timed_events.append([time.strftime("%Y-%m-%d %H:%M:%S", action_time), args])
+
+        if self.DEBUG:
+            print(timed_events)
+
+        with open("timed_events.csv", 'w') as f:
+            csv.writer(f).writerows(timed_events)
+
+    def check_timed_events(self):
+        """Checks and executes timed events"""
+        timed_events = []
+        with open("timed_events.csv", 'r') as f:
+            timed_events.extend(csv.reader(f))
+
+        if self.DEBUG:
+            print(timed_events)
+
+        if timed_events == []:
+            timed_events.append([time.localtime(), 'ignore'])
+
+        cur_time = time.localtime()
+        launch_event = None
+        for event in timed_events:
+            for i in range(6):
+                if event[0][i] == cur_time[i]:
+                    if self.DEBUG:
+                        print('equal')
+                    pass
+                else:
+                    if self.DEBUG:
+                        print('not equal')
+                    break
+            launch_event = event
+
+        if self.DEBUG:
+            print(launch_event)
 
     """
     Parsers
@@ -159,6 +241,7 @@ class IRCBot:
             pass
         if (self.nickname + " :End of /MOTD") in data:
             self.join_channel()
+            self.get_online_users()
         if data.split(' ')[1] == "353":
             if self.DEBUG:
                 print("Parsing userlist!")
@@ -187,10 +270,11 @@ class IRCBot:
                     self.cmd_back(self.get_sender(data))
                 elif command == "!where":
                     self.cmd_where(args)
+                elif command == "!remind":
+                    self.cmd_remind(args)
 
                 # Debug-only commands
                 if self.DEBUG:
-                    print("Executing a debug-only command")
                     if command == "!stop":
                         if self.get_sender(data) == "MrTijn":
                             print("Stopping...")
@@ -240,9 +324,9 @@ class IRCBot:
         self.send_msg(line3)
 
 
-    """
+    '''
     AFK / Back related commands
-    """
+    '''
 
     def cmd_afk(self, user, away_msg):
         """Marks a user afk
@@ -252,57 +336,57 @@ class IRCBot:
         """
         away_msg = utils.list_to_str(away_msg)
 
-        users_afk = []
-        with open("users_afk.csv", 'r') as f:
-            users_afk.extend(csv.reader(f))
+        afk_users = []
+        with open("afk_users.csv", 'r') as f:
+            afk_users.extend(csv.reader(f))
 
         if self.DEBUG:
-            print(users_afk)
+            print(afk_users)
 
         # Hacky fix for bug when no one is afk
-        if users_afk == []:
-            users_afk.append(['',''])
+        if afk_users == []:
+            afk_users.append(['',''])
             if self.DEBUG:
-                print("Added empty row for users_afk")
+                print("Added empty row for afk_users")
 
         set_afk = False
-        for row in users_afk:
+        for row in afk_users:
             if user == row[0]:
                 row[1] = away_msg
                 self.send_msg("You were already away, Your new afk message is: " + away_msg)
                 set_afk = True
         if set_afk == False:
-            users_afk.append([user, away_msg])
+            afk_users.append([user, away_msg])
             self.send_msg("You are now afk.")
 
         if self.DEBUG:
-            print(users_afk)
+            print(afk_users)
 
-        with open("users_afk.csv", 'w') as f:
-            csv.writer(f).writerows(users_afk)
+        with open("afk_users.csv", 'w') as f:
+            csv.writer(f).writerows(afk_users)
 
     def cmd_back(self, user):
         """Removes afk marking for a given user"""
-        users_afk = []
-        with open("users_afk.csv", 'r') as f:
-            users_afk.extend(csv.reader(f))
+        afk_users = []
+        with open("afk_users.csv", 'r') as f:
+            afk_users.extend(csv.reader(f))
 
         if self.DEBUG:
-            print(users_afk)
+            print(afk_users)
 
         state_changed = False
-        if users_afk != []:
-            for row in users_afk:
+        if afk_users != []:
+            for row in afk_users:
                 if user == row[0]:
-                    users_afk.remove(row)
+                    afk_users.remove(row)
                     self.send_msg("Welcome back!")
                     state_changed = True
         if state_changed == False:
             self.send_msg("You weren't afk, but welcome back!")
 
         # Write changes to database
-        with open("users_afk.csv", 'w') as f:
-            csv.writer(f).writerows(users_afk)
+        with open("afk_users.csv", 'w') as f:
+            csv.writer(f).writerows(afk_users)
 
     def cmd_where(self, args):
         """Sends given user state to channel
@@ -313,12 +397,12 @@ class IRCBot:
         user = args[0]
 
         # First check if AFK
-        users_afk = []
-        with open("users_afk.csv", 'r') as f:
-            users_afk.extend(csv.reader(f))
+        afk_users = []
+        with open("afk_users.csv", 'r') as f:
+            afk_users.extend(csv.reader(f))
 
-        if users_afk != []:
-            for row in users_afk:
+        if afk_users != []:
+            for row in afk_users:
                 if user == row[0]:
                     self.send_msg(user + ": " + user + " is afk: " + row[1])
                     return
@@ -334,3 +418,14 @@ class IRCBot:
             return
 
         self.send_msg(user + ": " + user + " is offline.")
+
+    """
+    Tell / Remind & related commands
+    """
+
+    def cmd_remind(self, args):
+        """Sets a reminder"""
+        self.debug_print(args)
+        reminder = ["reminder"] + args
+        self.debug_print(reminder)
+        self.add_timed_event(time.localtime(), reminder)

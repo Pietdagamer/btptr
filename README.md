@@ -12,7 +12,7 @@ An IRC bot written in python
 | !where     | Checks where a user is (AFK or Back)                      |Y     	   |
 | !choose    | Chooses one of the given options                          |Y			   |
 | !answer    | (kindof)                                                  |N			   |
-| !remind    | Reminds a user of something after a given amount of time  |N			   |
+| !remind    | Reminds a user of something after a given amount of time  |WIP		   |
 | !waitforit | stupid reference joke command                             |N			   |
 | !whatsnew  | New functions in the bot                                  |N		  	   |
 | !say       | Make the bot send a message                               |Y	   		   |
