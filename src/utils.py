@@ -22,3 +22,8 @@
 def list_to_str(l):
     """Converts list to a normal string without square brackets and quotes"""
     return ' '.join(l)
+
+def touch_files():
+    files = ["timed_events.csv", "afk_users.csv"]
+    for fn in files:
+        open(fn, 'a').close()
