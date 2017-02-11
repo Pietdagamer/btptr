@@ -1,4 +1,4 @@
-# btptr
+# btjchmpie
 
 An IRC bot written in python
 
