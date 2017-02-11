@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 # -*- encoding: utf-8 -*-
 """
-    ircbot - irc bot class
+    ircbot - IRCBot class
     This file is part of btptr.
 
     Copyright (c) 2017 MrTijn
@@ -27,9 +27,10 @@ import re
 import csv
 import sys
 from ascii_art import AsciiArt
+import irc
 import utils
 
-class IRCBot:
+class IRCBot(irc.IRC):
     DEBUG = True
 
     nickname = None
@@ -46,8 +47,8 @@ class IRCBot:
     # Format: [[str user, str afk_msg], ...]
     afk_users = []
 
-    # Format: [[str t, str list args], ...]
-    # t format: "%Y-%m-%d %H:%M:%S"
+    # Format: [[int t, str list args], ...]
+    # t: seconds since epoch
     # args format: [str action]
     # args format for reminder: [str action, str user, str remind_msg]
     # Actions: reminder, sync, ignore
@@ -93,32 +94,6 @@ class IRCBot:
             print(msg)
 
     """
-    Basic connection methods
-    """
-
-    def connect(self):
-        """Connects to IRC server and sets nickname"""
-        self.sock.connect((self.irc_server_address, self.irc_server_port))
-        self.sock.send("USER " + self.nickname + " 0 * :" + self.owner + "\r\n")
-        self.sock.send("NICK " + self.nickname + "\r\n")
-
-    def join_channel(self):
-        """Join configured channel"""
-        self.sock.send("MODE " + self.nickname + " +B\r\n")
-        self.sock.send("JOIN " + self.channel + "\r\n")
-
-    def send_msg(self, msg):
-        """Send a string to the configured channel"""
-        return self.sock.send("PRIVMSG " + self.channel + " :" + msg + "\r\n")
-
-    def send_raw(self, data):
-        """Send raw data to irc server"""
-        return self.sock.send(data + "\r\n")
-
-    def notice(self, msg, nick):
-        return self.sock.send("NOTICE " + nick + " :" + msg + "\r\n")
-
-    """
     get_ methods
     """
 
@@ -157,7 +132,7 @@ class IRCBot:
 
         self.debug_print(timed_events)
 
-        timed_events.append([time.strftime("%Y-%m-%d %H:%M:%S", action_time), args])
+        timed_events.append([action_time, args])
 
         self.debug_print(timed_events)
 
@@ -411,8 +386,41 @@ class IRCBot:
     """
 
     def cmd_remind(self, args):
-        """Sets a reminder"""
-        self.debug_print(args)
-        reminder = ["reminder"] + args
-        self.debug_print(reminder)
-        self.add_timed_event(time.localtime(), reminder)
+        """Sets a reminder
+
+        args[0]: user to be reminded
+        args[1]: relative time
+        args[2]: time unit (s/m/h/dD/wW/M/yY/)
+        """
+
+        user = args[0]
+        rel_time = args[1]
+        time_unit = [2]
+
+        # Get time in seconds since epoch
+        cur_time = time.time()
+        reminder_time = None
+
+        if utils.represents_int(rel_time) is False:
+            self.debug_print("Invalid relative time")
+        if time_unit not in "smhdDwWMyYD":
+            self.debug_print("Invalid time unit")
+
+        if time_unit == 's':
+            reminder_time = cur_time + int(rel_time)
+        elif time_unit == 'm':
+            reminder_time = cur_time + (int(rel_time) * 60)
+        elif time_unit == 'h':
+            reminder_time = cur_time + (int(rel_time) * 3600)
+        elif time_unit == 'd' or time_unit == 'D':
+            reminder_time = cur_time + (int(rel_time) * 86400)
+        elif time_unit == 'w' or time_unit == 'W':
+            reminder_time = cur_time + (int(rel_time) * 604800)
+        elif time_unit == 'M':
+            reminder_time = cur_time + (int(rel_time) * 2592000)
+        elif time_unit == 'y' or time_unit == 'Y':
+            reminder_time = cur_time + (int(rel_time) * 31536000)
+
+        self.send_msg("Okay, I will remind " + user + " on " + time.strftime("%A %d %B %H:%M:%S %Y", time.localtime(reminder_time)))
+        del args[1:2]
+        self.add_timed_events(reminder_time, args)

@@ -48,3 +48,6 @@ while 1:
     data = btptr.sock.recv(512)
     print(data)
     btptr.parse_recv_data(data)
+
+    # Find a better solution to do this
+    btptr.check_timed_events()

@@ -27,3 +27,11 @@ def touch_files():
     files = ["timed_events.csv", "afk_users.csv"]
     for fn in files:
         open(fn, 'a').close()
+
+def represents_int(i):
+    """Checks if a string can be converted to an integer"""
+    try:
+        int(i)
+        return True
+    except ValueError:
+        return False
