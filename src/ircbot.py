@@ -155,11 +155,11 @@ class IRCBot:
         with open("timed_events.csv", 'r') as f:
             timed_events.extend(csv.reader(f))
 
-        debug_print(timed_events)
+        self.debug_print(timed_events)
 
         timed_events.append([time.strftime("%Y-%m-%d %H:%M:%S", action_time), args])
 
-        debug_print(timed_events)
+        self.debug_print(timed_events)
 
         with open("timed_events.csv", 'w') as f:
             csv.writer(f).writerows(timed_events)
@@ -170,7 +170,7 @@ class IRCBot:
         with open("timed_events.csv", 'r') as f:
             timed_events.extend(csv.reader(f))
 
-        debug_print(timed_events)
+        self.debug_print(timed_events)
 
         if timed_events == []:
             timed_events.append([time.localtime(), 'ignore'])
@@ -180,14 +180,14 @@ class IRCBot:
         for event in timed_events:
             for i in range(6):
                 if event[0][i] == cur_time[i]:
-                    debug_print("equal")
+                    self.debug_print("equal")
                     pass
                 else:
-                    debug_print("not equal")
+                    self.debug_print("not equal")
                     break
             launch_event = event
 
-        debug_print(launch_event)
+        self.debug_print(launch_event)
 
     """
     Parsers
@@ -237,7 +237,7 @@ class IRCBot:
             self.join_channel()
             self.get_online_users()
         if data.split(' ')[1] == "353":
-            debug_print("Parsing userlist!")
+            self.debug_print("Parsing userlist!")
             self.parse_userlist(data)
         elif data.split(' ')[1] == "PRIVMSG":
             msg = data.split(' ')[3]
@@ -245,7 +245,7 @@ class IRCBot:
                 command_and_args = self.parse_arguments(data)
                 command = command_and_args[0]
                 args = command_and_args[1]
-                debug_print(command_and_args)
+                self.debug_print(command_and_args)
 
                 if command in self.preset_text_cmds:
                     self.send_msg(self.preset_text_cmds[command])
@@ -332,12 +332,12 @@ class IRCBot:
         with open("afk_users.csv", 'r') as f:
             afk_users.extend(csv.reader(f))
 
-        debug_print(afk_users)
+        self.debug_print(afk_users)
 
         # Hacky fix for bug when no one is afk
         if afk_users == []:
             afk_users.append(['',''])
-            debug_print("Added empty row to afk_users")
+            self.debug_print("Added empty row to afk_users")
 
         set_afk = False
         for row in afk_users:
@@ -349,7 +349,7 @@ class IRCBot:
             afk_users.append([user, away_msg])
             self.send_msg("You are now afk.")
 
-        debug_print(afk_users)
+        self.debug_print(afk_users)
 
         with open("afk_users.csv", 'w') as f:
             csv.writer(f).writerows(afk_users)
@@ -360,7 +360,7 @@ class IRCBot:
         with open("afk_users.csv", 'r') as f:
             afk_users.extend(csv.reader(f))
 
-        debug_print(afk_users)
+        self.debug_print(afk_users)
 
         state_changed = False
         if afk_users != []:
@@ -397,8 +397,8 @@ class IRCBot:
 
         result = self.get_online_users()
 
-        debug_print(result)
-        debug_print(get_online_users)
+        self.debug_print(result)
+        self.debug_print(get_online_users)
 
         if user in self.online_users:
             self.send_msg(user + ": " + user + " is online.")
