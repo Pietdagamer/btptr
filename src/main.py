@@ -28,7 +28,7 @@ import ircbot
 DEBUG = True
 
 bot_owner = "Meandonlymeandnooneelse"
-nick = "btjchmpy"
+nick = "btjchmpie"
 
 if DEBUG:
     channel = "#btjchmpy"
@@ -45,9 +45,9 @@ btjchmpie = ircbot.IRCBot(nick, channel, bot_owner, server, port)
 time.sleep(5)
 
 while 1:
-    data = btjchmpie.sock.recv(512)
+    data = btjchmpie.sock.recv(512).decode("utf-8")
     print(data)
     btjchmpie.parse_recv_data(data)
 
     # Find a better solution to do this
-    btjchmpie.check_timed_events()
+    #btjchmpie.check_timed_events()

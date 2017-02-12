@@ -38,7 +38,21 @@ class IRC:
         self.irc_server_address = irc_server_address
         self.irc_server_port = irc_server_port
 
-        self.sock = socket.socket()
+        self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+    """
+    Basic utility methods
+    """
+
+    def debug_print(self, msg):
+        if self.DEBUG:
+            print(msg)
+
+    def sock_send_str(self, msg):
+        total_sent = 0
+        while total_sent < len(msg):
+            sent = self.sock.send(msg[total_sent:].encode())
+            total_sent += sent
 
     """
     Basic connection methods
@@ -47,21 +61,21 @@ class IRC:
     def connect(self):
         """Connects to IRC server and sets nickname"""
         self.sock.connect((self.irc_server_address, self.irc_server_port))
-        self.sock.send("USER " + self.nickname + " 0 * :" + self.realname + "\r\n")
-        self.sock.send("NICK " + self.nickname + "\r\n")
+        self.sock_send_str("USER " + self.nickname + " 0 * :" + self.realname + "\r\n")
+        self.sock_send_str("NICK " + self.nickname + "\r\n")
 
     def join_channel(self):
         """Join configured channel"""
-        self.sock.send("MODE " + self.nickname + " +B\r\n")
-        self.sock.send("JOIN " + self.channel + "\r\n")
+        self.sock_send_str("MODE " + self.nickname + " +B\r\n")
+        self.sock_send_str("JOIN " + self.channel + "\r\n")
 
     def send_msg(self, msg):
         """Send a string to the configured channel"""
-        return self.sock.send("PRIVMSG " + self.channel + " :" + msg + "\r\n")
+        return self.sock_send_str("PRIVMSG " + self.channel + " :" + msg + "\r\n")
 
     def send_raw(self, data):
         """Send raw data to irc server"""
-        return self.sock.send(data + "\r\n")
+        return self.sock_send_str(data + "\r\n")
 
     def notice(self, msg, nick):
-        return self.sock.send("NOTICE " + nick + " :" + msg + "\r\n")
+        return self.sock_send_str("NOTICE " + nick + " :" + msg + "\r\n")

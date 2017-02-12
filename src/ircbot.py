@@ -35,7 +35,7 @@ class IRCBot(irc.IRC):
 
     nickname = None
     channel = None
-    owner = None
+    realname = None
     irc_server_address = None
     irc_server_port = None
     sock = None
@@ -65,7 +65,7 @@ class IRCBot(irc.IRC):
     def __init__(self, nickname, channel, owner, irc_server_address, irc_server_port):
         self.nickname = nickname
         self.channel = channel
-        self.owner = owner
+        self.realname = owner
         self.irc_server_address = irc_server_address
         self.irc_server_port = irc_server_port
 
@@ -89,10 +89,6 @@ class IRCBot(irc.IRC):
         with open("license_information.txt") as f:
             return f.read().replace('\n','-')
 
-    def debug_print(self, msg):
-        if self.DEBUG:
-            print(msg)
-
     """
     get_ methods
     """
@@ -104,11 +100,11 @@ class IRCBot(irc.IRC):
 
     def get_online_users(self):
         """Request userlist from server"""
-        self.sock.send("NAMES " + self.channel + "\r\n")
+        self.sock_send_str("NAMES " + self.channel + "\r\n")
         # So this is kinda risky, because we could miss a user message if this
         # isn't the server response of our NAMES command. But let's just hope
         # that'll never happen.
-        answer = self.sock.recv(512)
+        answer = self.sock.recv(512).decode("utf-8")
         if answer.split(' ')[1] == "353":
             self.parse_userlist(answer)
             return True
@@ -291,9 +287,9 @@ class IRCBot(irc.IRC):
         self.send_msg(line3)
 
 
-    '''
+    """
     AFK / Back related commands
-    '''
+    """
 
     def cmd_afk(self, user, away_msg):
         """Marks a user afk
