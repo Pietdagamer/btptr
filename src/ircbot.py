@@ -201,7 +201,7 @@ class IRCBot(irc.IRC):
 
     def parse_recv_data(self, data):
         if data.startswith("PING"):
-            self.sock.send(data.replace("PING", "PONG"))
+            self.sock_send_str(data.replace("PING", "PONG"))
         if data[0] != ':':
             pass
         if (self.nickname + " :End of /MOTD") in data:
