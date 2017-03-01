@@ -27,6 +27,7 @@ An IRC bot written in python
 | !help      | Prints help                                               |WIP          |
 | !version   | Prints IRCBot class version                               |Y            |
 | !license   | Prints license information                                |Y            |
+| !featurerequest | Requests a fueture to be implemented | N |
 
 # Todo
 
