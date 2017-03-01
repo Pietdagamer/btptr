@@ -29,6 +29,7 @@ import sys
 from ascii_art import AsciiArt
 import irc
 import utils
+from threading import Timer
 
 class IRCBot(irc.IRC):
     DEBUG = True
@@ -160,6 +161,9 @@ class IRCBot(irc.IRC):
 
         self.debug_print(launch_event)
 
+    def remind_user(self, user, message):
+        self.send_msg(user + ": " + message)
+
     """
     Parsers
     """
@@ -211,6 +215,7 @@ class IRCBot(irc.IRC):
             self.debug_print("Parsing userlist!")
             self.parse_userlist(data)
         elif data.split(' ')[1] == "PRIVMSG":
+            user = data.split(':')[1].split('!')[0] # potiental crash point?
             msg = data.split(' ')[3]
             if msg.startswith(":!"):
                 command_and_args = self.parse_arguments(data)
@@ -234,7 +239,7 @@ class IRCBot(irc.IRC):
                 elif command == "!where":
                     self.cmd_where(args)
                 elif command == "!remind":
-                    self.cmd_remind(args)
+                    self.cmd_remind(args, user)
 
                 # Debug-only commands
                 if self.DEBUG:
@@ -381,7 +386,7 @@ class IRCBot(irc.IRC):
     Tell / Remind & related commands
     """
 
-    def cmd_remind(self, args):
+    def cmd_remind(self, args, user):
         """Sets a reminder
 
         args[0]: user to be reminded
@@ -389,18 +394,30 @@ class IRCBot(irc.IRC):
         args[2]: time unit (s/m/h/dD/wW/M/yY/)
         """
 
-        user = args[0]
+        if len(args) < 3:
+            self.send_msg("You did not provide me with enough information :/ " +\
+                "Syntax: !remind [user] [number] [time unit (s/m/h/dD/wW/M/yY/)] [msg]")
+            return
+
+        user_to_remind = args[0]
         rel_time = args[1]
-        time_unit = [2]
+        time_unit = args[2]
+        msg = args[3:]
+
+        if user_to_remind == "me":
+            user_to_remind = user
 
         # Get time in seconds since epoch
         cur_time = time.time()
         reminder_time = None
 
         if utils.represents_int(rel_time) is False:
-            self.debug_print("Invalid relative time")
+            self.send_msg("I don't know when to remind you :( "+\
+                "Syntax: !remind [user] [number] [time unit (s/m/h/d/w/M/y/)] [msg]")
+            return
         if time_unit not in "smhdDwWMyYD":
-            self.debug_print("Invalid time unit")
+            self.send_msg("Oof, I don't know how to interpret that time unit :S Use one of these: /m/h/d/w/M/y/")
+            return
 
         if time_unit == 's':
             reminder_time = cur_time + int(rel_time)
@@ -417,6 +434,8 @@ class IRCBot(irc.IRC):
         elif time_unit == 'y' or time_unit == 'Y':
             reminder_time = cur_time + (int(rel_time) * 31536000)
 
-        self.send_msg("Okay, I will remind " + user + " on " + time.strftime("%A %d %B %H:%M:%S %Y", time.localtime(reminder_time)))
+        self.send_msg("Okay, I will remind " + user_to_remind + " on " + time.strftime("%A %d %B %H:%M:%S %Y", time.localtime(reminder_time)))
         del args[1:2]
-        self.add_timed_events(reminder_time, args)
+
+        t = Timer(reminder_time - cur_time, self.remind_user, [user_to_remind, utils.list_to_str(msg)])
+        t.start();
