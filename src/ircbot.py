@@ -5,6 +5,7 @@
     This file is part of btjchmpie.
 
     Copyright (c) 2017 MrTijn
+    Copyright (c) 2017 Pietdagamer
 
     btjchmpie is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
